@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from yaml.error import YAMLError
 import argparse
-import getpass
 import json
 import os
 import subprocess
@@ -18,20 +17,16 @@ Note this script must be run as the `git` user.
 """
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('src', action='store',
+    parser.add_argument('appname', action='store',
                         help='path to source repository')
     parser.add_argument('user', action='store',
                         help='name of user who started build',
                         default='system')
-    # check execution environment
-    if getpass.getuser() != 'git':
-        sys.stderr.write('This script must be run as the "git" user\n')
-        parser.print_help()
-        sys.exit(1)
     args = parser.parse_args()
-    args.src = os.path.abspath(args.src)
+    args.src = '/tmp/deis/repos/{}/.git'.format(args.appname)
+    args.app_path = args.src.replace('.git', '')
     # store app ID
-    args.app = '/'.join(args.src.split(os.path.sep)[-1:]).replace('.git', '')
+    args.app = args.appname
     return args
 
 
@@ -64,9 +59,30 @@ def exit_on_error(error_code, msg):
     sys.exit(error_code)
 
 
+def _stream_command(command=[]):
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    while True:
+        line = proc.stdout.readline()
+        if line != '':
+            sys.stdout.write(line)
+        else:
+            break
+
+
 if __name__ == '__main__':
     args = parse_args()
-    # get sha of master
+
+    # Get the public repo from Github
+    git_remote_path = args.appname\
+        .replace('--', '*placeholder*')\
+        .replace('-', '/')\
+        .replace('*placeholder*', '-')
+    git_remote = 'https://github.com/{}.git'.format(git_remote_path)
+    git_clone = 'git clone {} {}'.format(git_remote, args.app_path)
+    git_pull = 'cd {} && git pull origin master'.format(args.app_path)
+    git_cmd = git_pull if os.path.isdir(args.src) else git_clone
+    _stream_command(git_cmd)
+
     try:
         with open(os.path.join(args.src, 'refs/heads/master')) as f:
             sha = f.read().strip('\n')
@@ -132,7 +148,7 @@ if __name__ == '__main__':
             'config': release.get('config_vars', {})}
     # TODO: why can't we run this with `sudo -u deis`?
     output = subprocess.check_output(
-        ['sudo', '-u', 'deis', '<%= @controller_dir %>/bin/pre-push-hook'])
+        ['<%= @controller_dir %>/bin/pre-push-hook'])
     data = json.loads(output)
     ip = data['domain']
     push['url'] = "http://{ip}/slugs/{args.app}-{sha}.tar.gz".format(**locals())
@@ -144,7 +160,7 @@ if __name__ == '__main__':
     # run
     sys.stdout.write("       " + "Launching... ")
     sys.stdout.flush()
-    p = subprocess.Popen(['sudo', '-u', 'deis', '<%= @controller_dir %>/bin/push-hook'],
+    p = subprocess.Popen(['<%= @controller_dir %>/bin/push-hook'],
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate(json.dumps(push))
     rc = p.wait()
@@ -154,7 +170,7 @@ if __name__ == '__main__':
     sys.stdout.write("done, v{}\n".format(databag['release']['version']))
     sys.stdout.flush()
     puts_line()
-    puts_step("{args.app} deployed to Deis".format(**locals()))
+    puts_step("{args.app} deployed to Crowdbox".format(**locals()))
     domains = databag.get('domains', [])
     if domains:
         for domain in domains:
@@ -163,6 +179,6 @@ if __name__ == '__main__':
         puts('No proxy nodes found for this formation.\n')
 
     puts_line()
-    puts('To learn more, use `deis help` or visit http://deis.io')
+    puts('To learn more, use `deis help` or visit http://crowdbox.es')
     puts_line()
     puts_line()
