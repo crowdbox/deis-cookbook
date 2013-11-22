@@ -150,3 +150,28 @@ Dir.glob("/etc/init/deis-*").each do |path|
     action :delete
   end
 end
+
+nodes = search(:node, 'run_list:recipe\[deis\:\:controller\]')
+controller_ip = nodes.map{ |n| n['ipaddress'] }.first
+
+template '/opt/deis/runtime/heartbeat.rb' do
+  user 'root'
+  group 'root'
+  mode 0644
+  source 'heartbeat.rb'
+  notifies :restart, "service[heartbeat]", :delayed
+end
+
+template '/etc/init/heartbeat.conf' do
+  user 'root'
+  group 'root'
+  mode 0644
+  source 'heartbeat.conf.erb'
+  variables :controller_ip => controller_ip
+  notifies :restart, "service[heartbeat]", :delayed
+end
+
+service 'heartbeat' do
+  provider Chef::Provider::Service::Upstart
+  action [:enable]
+end

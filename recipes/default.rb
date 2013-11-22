@@ -23,6 +23,20 @@ user username do
   action :create
 end
 
+# create a docker group and grant it access to
+# /var/run/docker.sock
+group 'docker' do
+  members ['deis']
+  action :create
+  system true
+end
+
+execute 'set-docker-sock-perms' do
+  command 'chgrp docker /var/run/docker.sock'
+  not_if "ls -l /var/run/docker.sock | awk {'print $4'} | grep docker"
+  action :run
+end
+
 directory home_dir do
   user username
   group username
