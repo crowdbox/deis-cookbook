@@ -11,8 +11,6 @@ package 'libevent-dev' # for gevent
 package 'rabbitmq-server' # for celery
 package 'libpq-dev' # for psycopg2
 
-# synchronize the gitosis repository
-
 git controller_dir do
   user username
   group group
