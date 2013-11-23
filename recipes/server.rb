@@ -10,6 +10,7 @@ package 'python-dev'
 package 'libevent-dev' # for gevent
 package 'rabbitmq-server' # for celery
 package 'libpq-dev' # for psycopg2
+package 'libfreetype6-dev' # for captcha forms
 
 git controller_dir do
   user username
