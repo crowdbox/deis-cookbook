@@ -14,6 +14,6 @@ setgid root
 env CONTROLLER_IP=<%= @controller_ip %>
 
 script
-  exec ruby /opt/deis/runtime/heartbeat.rb &> /var/log/deis/heartbeat.log
+  exec ruby /opt/deis/runtime/heartbeat.rb >> /var/log/deis/heartbeat.log 2>&1
 end script
 

@@ -8,12 +8,12 @@ stop on runlevel [!2345]
 respawn
 respawn limit 2 10   # stop if there are 2 respawns in 10 seconds
 
-setuid root
-setgid root
+setuid deis
+setgid docker
 
 script
   cd /opt/deis/controller
   . venv/bin/activate
-  exec python bin/rendevous.tpy &> /var/log/deis/rendevous.log
+  exec python bin/rendevous.tpy >> /var/log/deis/rendevous.log 2>&1
 end script
 
