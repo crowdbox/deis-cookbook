@@ -128,6 +128,20 @@ service 'deis-worker' do
   subscribes :restart, "git[#{controller_dir}]", :delayed
 end
 
+template '/etc/init/rendevous.conf' do
+  user 'root'
+  group 'root'
+  mode 0644
+  source 'rendevous.conf.erb'
+  notifies :restart, "service[rendevous]", :delayed
+end
+
+service 'rendevous' do
+  provider Chef::Provider::Service::Upstart
+  action [:enable]
+  subscribes :restart, "git[#{controller_dir}]", :delayed
+end
+
 # nginx configuration
 
 include_recipe 'deis::nginx'
