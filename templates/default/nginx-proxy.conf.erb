@@ -48,7 +48,7 @@ server {
 	#}
 
 	<% if @backends.length == 0 %>
-		return 302 http://deis-controller.local/app/<%= @app %>;
+		return 302 <%= @controller_host %>/app/<%= @app %>;
 	<% end %>
 
 

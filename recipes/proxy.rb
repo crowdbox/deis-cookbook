@@ -34,6 +34,7 @@ formations.each do |f|
     end
     
     vars = {:server_name => server_name,
+            :controller_host => node['deis']['controller']['url'],
             :app => app_id,
             :port => proxy['port'],
             :backends => proxy['backends'], 

@@ -26,7 +26,8 @@ default.deis.database.user = 'deis'
 
 # server/api
 default.deis.controller.dir = '/opt/deis/controller'
-default.deis.controller.repository = 'https://github.com/opdemand/deis.git'
+default.deis.controller.repository = 'https://github.com/crowdbox/deis.git'
+default.deis.controller.url = 'deis-controller.local'
 default.deis.controller.revision = 'master'
 default.deis.controller.debug = 'False'
 default.deis.controller.workers = 4
