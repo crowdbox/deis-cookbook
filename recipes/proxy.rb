@@ -34,7 +34,7 @@ formations.each do |f|
     end
     
     vars = {:server_name => server_name,
-            :controller_host => node['deis']['controller']['url'],
+            :controller_host => data_bag_item('deis-global', 'hostname')['value'],
             :app => app_id,
             :port => proxy['port'],
             :backends => proxy['backends'], 
