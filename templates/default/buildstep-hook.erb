@@ -8,6 +8,12 @@ import sys
 import uuid
 import yaml
 
+# Set up Django so it can find deis/settings.py
+sys.path.insert(0, '/opt/deis/controller')
+os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+
+from api import models
+
 
 def parse_args():
     desc = """
@@ -73,11 +79,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     # Get the public repo from Github
-    git_remote_path = args.appname\
-        .replace('--', '*placeholder*')\
-        .replace('-', '/')\
-        .replace('*placeholder*', '-')
-    git_remote = 'https://github.com/{}.git'.format(git_remote_path)
+    app = models.App.objects.get(id=args.appname)
+    git_remote = 'https://github.com/{}.git'.format(app.github_uri)
     git_clone = 'git clone {} {}'.format(git_remote, args.app_path)
     git_pull = 'cd {} && git pull origin master'.format(args.app_path)
     git_cmd = git_pull if os.path.isdir(args.src) else git_clone
