@@ -29,7 +29,7 @@ loop do
     # Following returns something like 'opdemand-example--ruby--sinatra-4'
     app_with_version = data['Volumes']['/app'].split('/')[5]
     # Strip off the version number at the end
-    apps << app_with_version[/(.*)-[0-9]+$/, 1]
+    apps << app_with_version[/(.*)-v[0-9]+$/, 1]
   end
 
   # This is the heartbeat payload
