@@ -5,7 +5,6 @@ import json
 import os
 import subprocess
 import sys
-import uuid
 import yaml
 
 # Set up Django so it can find deis/settings.py
@@ -13,6 +12,9 @@ sys.path.insert(0, '/opt/deis/controller')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
 
 from api import models
+from django.conf import settings
+
+swanson = models.Formation.objects.select_for_update().filter(id='swanson')[0]  # Use transaction
 
 
 def parse_args():
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     # Get the public repo from Github
-    app = models.App.objects.get(id=args.appname)
+    app = models.App.objects.select_for_update().filter(id=args.appname)[0]  # Use transaction
     git_clone = 'git clone {} {}'.format(app.github_uri(), args.app_path)
     git_pull = 'cd {} && git pull origin master'.format(args.app_path)
     git_cmd = git_pull if os.path.isdir(args.src) else git_clone
@@ -132,7 +134,7 @@ if __name__ == '__main__':
     try:
         release = yaml.safe_load(p.stdout.read())
     except YAMLError as e:
-        exit_on_error(1, 'Invalid Release format: {0}'.format(e))    
+        exit_on_error(1, 'Invalid Release format: {0}'.format(e))
     # remove the container
     cmd = 'docker rm {container}'.format(**locals())
     p = subprocess.Popen(cmd, cwd=args.src, shell=True, stdout=subprocess.PIPE)
@@ -181,6 +183,16 @@ if __name__ == '__main__':
     puts_line()
     puts_step("Donation page available at:")
     puts("http://crowdbox.io/app/{args.app}\n".format(**locals()))
+
+    if len(app.release_set.all()) == 2:
+        swanson.crowdbox_credits -= settings.APP_INITIAL_CREDITS
+        swanson.save()
+        app.credits += settings.APP_INITIAL_CREDITS
+        app.save()
+        puts("This is the app's first deploy, so it has been given {} free credits.".format(
+            settings.APP_INITIAL_CREDITS
+        ))
+        puts_line()
 
     puts_line()
     puts('To learn more, use `crowdbox help` or visit http://crowdbox.io')
