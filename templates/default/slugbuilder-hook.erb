@@ -173,7 +173,7 @@ if __name__ == '__main__':
     sys.stdout.write("done, v{}\n".format(databag['release']['version']))
     sys.stdout.flush()
     puts_line()
-    puts_step("{args.app} deployed to Crowdbox".format(**locals()))
+    puts_step("{args.app} deployed to Dānabox".format(**locals()))
     domains = databag.get('domains', [])
     if domains:
         for domain in domains:
@@ -182,10 +182,10 @@ if __name__ == '__main__':
         puts('No proxy nodes found for this formation.\n')
     puts_line()
     puts_step("Donation page available at:")
-    puts("http://crowdbox.io/app/{args.app}\n".format(**locals()))
+    puts("http://danabox.io/app/{args.app}\n".format(**locals()))
 
     if len(app.release_set.all()) == 2:
-        swanson.crowdbox_credits -= settings.APP_INITIAL_CREDITS
+        swanson.danabox_credits -= settings.APP_INITIAL_CREDITS
         swanson.save()
         app.credits += settings.APP_INITIAL_CREDITS
         app.save()
@@ -195,6 +195,6 @@ if __name__ == '__main__':
         puts_line()
 
     puts_line()
-    puts('To learn more, use `crowdbox help` or visit http://crowdbox.io')
+    puts('To learn more, use `danabox help` or visit http://danabox.io')
     puts_line()
     puts_line()
